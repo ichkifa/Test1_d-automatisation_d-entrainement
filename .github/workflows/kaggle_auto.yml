@@ -1,0 +1,55 @@
+name: Run Code on Kaggle
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy-to-kaggle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Configuration de Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Installation de Kaggle API
+        run: pip install kaggle
+
+      - name: Authentification Kaggle (Version Token Mis à Jour)
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+        run: |
+          mkdir -p ~/.kaggle
+          # Configuration du nouveau token d'accès KGAT
+          echo "$KAGGLE_API_TOKEN" > ~/.kaggle/access_token
+          # Fichier config minimal requis pour l'utilitaire
+          echo "{\"username\":\"$KAGGLE_USERNAME\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/access_token ~/.kaggle/kaggle.json
+
+      - name: Envoi et Lancement sur Kaggle
+        run: |
+          mkdir -p push_dir
+          cp main.py push_dir/
+          cd push_dir
+          
+          # Initialisation de la configuration du script Kaggle
+          kaggle kernels init
+          
+          # Configuration des paramètres (Titre, GPU, Internet et Datasets attachés)
+          sed -i 's/"title": ".*"/"title": "tomato-auto-inference"/' kernel-metadata.json
+          sed -i 's/"code_file": ".*"/"code_file": "main.py"/' kernel-metadata.json
+          sed -i 's/"language": ".*"/"language": "python"/' kernel-metadata.json
+          sed -i 's/"kernel_type": ".*"/"kernel_type": "script"/' kernel-metadata.json
+          sed -i 's/"enable_gpu": ".*"/"enable_gpu": "true"/' kernel-metadata.json
+          sed -i 's/"enable_internet": ".*"/"enable_internet": "true"/' kernel-metadata.json
+          sed -i 's/"dataset_access_tokens": \[.*\]/"dataset_access_tokens": ["nesine\/dataset-test", "nesine\/tomato-model-ensemble-learning-v1"]/' kernel-metadata.json
+          
+          # Lancement du code sur Kaggle
+          kaggle kernels push
