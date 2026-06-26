@@ -26,6 +26,23 @@ jobs:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
         run: |
+          # Création forcée de l'arborescence lue par l'outil Kaggle
+          mkdir -p /home/runner/.config/kaggle
+          mkdir -p ~/.kaggle
+          
+          # Écriture du token officiel KGAT dans les deux dossiers pour éviter tout conflit
+          echo "$KAGGLE_API_TOKEN" > /home/runner/.config/kaggle/access_token
+          echo "$KAGGLE_API_TOKEN" > ~/.kaggle/access_token
+          
+          # Simulation d'un fichier JSON minimal requis par l'initialisation de l'API
+          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"\"}" > /home/runner/.config/kaggle/kaggle.json
+          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"\"}" > ~/.kaggle/kaggle.json
+          
+          # Sécurisation des permissions des fichiers créés
+          chmod 600 /home/runner/.config/kaggle/access_token /home/runner/.config/kaggle/kaggle.json
+          chmod 600 ~/.kaggle/access_token ~/.kaggle/kaggle.json
+          
+          # Préparation et envoi du projet
           mkdir -p push_dir
           cp main.py push_dir/
           cd push_dir
@@ -47,5 +64,5 @@ jobs:
             "kernel_sources": []
           }' > kernel-metadata.json
           
-          # La commande utilise directement les variables d'environnement déclarées au-dessus
+          # Lancement de l'exécution sur Kaggle
           kaggle kernels push
