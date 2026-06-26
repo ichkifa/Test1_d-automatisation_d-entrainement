@@ -1,8 +1,8 @@
 from pathlib import Path
 from PIL import Image
 
-# --- CONFIGURATION (Chemin de votre dataset réel) ---
-OOD_DATA_DIR = Path("/kaggle/input/datasets/nesine/dataset-test/dataset_test_Rabie_cleaned/tomato")
+# --- CONFIGURATION (Le chemin d'accès direct corrigé) ---
+OOD_DATA_DIR = Path("/kaggle/input/dataset_test/dataset_test_Rabie_cleaned/tomato")
 
 print("==================================================")
 print("TEST DE CONNEXION AU DATASET KAGGLE VIA GITHUB")
