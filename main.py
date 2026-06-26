@@ -1,43 +1,28 @@
+import os
 from pathlib import Path
-from PIL import Image
-
-# --- CONFIGURATION (Le chemin d'accès direct corrigé) ---
-OOD_DATA_DIR = Path("/kaggle/input/dataset_test/dataset_test_Rabie_cleaned/tomato")
 
 print("==================================================")
-print("TEST DE CONNEXION AU DATASET KAGGLE VIA GITHUB")
+print("EXPLORATION DES DOSSIERS DISPONIBLES SUR KAGGLE")
 print("==================================================")
 
-# 1. Vérification de l'existence du dossier
-if not OOD_DATA_DIR.exists():
-    print(f"❌ Erreur : Le dossier {OOD_DATA_DIR} est introuvable.")
-    print("Vérifiez que le dataset est bien attaché à votre script.")
+input_path = Path("/kaggle/input")
+
+if not input_path.exists():
+    print("❌ Le dossier racine /kaggle/input n'existe pas.")
 else:
-    print(f"✅ Succès : Le dossier {OOD_DATA_DIR} a été détecté.")
+    print("Contenu du dossier /kaggle/input :")
+    # Liste tous les sous-dossiers directement rattachés
+    subfolders = [f.name for f in input_path.iterdir()]
+    print(subfolders)
     
-    # 2. Recherche et affichage des premières images
-    valid_exts = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
-    img_paths = []
-    
-    # Parcours des sous-dossiers pour trouver des images
-    for folder in sorted(OOD_DATA_DIR.iterdir()):
-        if folder.is_dir():
-            for img_path in folder.iterdir():
-                if img_path.suffix.lower() in valid_exts:
-                    img_paths.append((img_path, folder.name))
-                    if len(img_paths) >= 5:  # On s'arrête à 5 pour aller vite
-                        break
-        if len(img_paths) >= 5:
-            break
-
-    print(f"\nNombre total d'images d'exemple lues : {len(img_paths)}")
-    
-    # 3. Test de lecture rapide (PIL) pour prouver que les fichiers s'ouvrent
-    print("\n--- ANALYSE EXPRESS DES 5 PREMIÈRES IMAGES ---")
-    for i, (path, class_name) in enumerate(img_paths):
-        with Image.open(path) as img:
-            width, height = img.size
-            print(f"Image {i+1} : Dossier [{class_name}] -> Nom: {path.name} | Taille: {width}x{height}")
+    print("\n--- RECHERCHE DE VOTRE DOSSIER TOMATE ---")
+    # Recherche automatique de tous les dossiers nommés 'tomato' ou 'dataset'
+    for root, dirs, files in os.walk("/kaggle/input"):
+        if "tomato" in root.lower() or "dataset" in root.lower():
+            print(f"Trouvé : {root}")
+            # Si on trouve des fichiers à l'intérieur, on liste les 3 premiers
+            items = os.listdir(root)
+            if items:
+                print(f"   -> Contenu (3 max) : {items[:3]}")
 
 print("==================================================")
-print("FIN DU TEST RAPIDE - LE DATASET FONCTIONNE !")
