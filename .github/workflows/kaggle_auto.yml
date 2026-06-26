@@ -21,16 +21,18 @@ jobs:
       - name: Installation de Kaggle API
         run: pip install kaggle
 
-      - name: Authentification Kaggle (Version Token Mis à Jour)
+      - name: Authentification Kaggle (Correctif Token)
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
         run: |
           mkdir -p ~/.kaggle
-          # Configuration du nouveau token d'accès KGAT
+          # Pour les nouveaux tokens (KGAT), l'API utilise uniquement ce fichier :
           echo "$KAGGLE_API_TOKEN" > ~/.kaggle/access_token
-          # Fichier config minimal requis pour l'utilitaire
-          echo "{\"username\":\"$KAGGLE_USERNAME\"}" > ~/.kaggle/kaggle.json
+          
+          # On crée un kaggle.json vierge qui contient uniquement le username pour éviter le bug de clé manquante
+          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"\"}" > ~/.kaggle/kaggle.json
+          
           chmod 600 ~/.kaggle/access_token ~/.kaggle/kaggle.json
 
       - name: Envoi et Lancement sur Kaggle
@@ -39,17 +41,21 @@ jobs:
           cp main.py push_dir/
           cd push_dir
           
-          # Initialisation de la configuration du script Kaggle
-          kaggle kernels init
+          echo '{
+            "id": "nesine/tomato-auto-inference",
+            "title": "tomato-auto-inference",
+            "code_file": "main.py",
+            "language": "python",
+            "kernel_type": "script",
+            "is_private": "true",
+            "enable_gpu": "true",
+            "enable_internet": "true",
+            "dataset_access_tokens": [
+              "nesine/dataset-test",
+              "nesine/tomato-model-ensemble-learning-v1"
+            ],
+            "competition_sources": [],
+            "kernel_sources": []
+          }' > kernel-metadata.json
           
-          # Configuration des paramètres (Titre, GPU, Internet et Datasets attachés)
-          sed -i 's/"title": ".*"/"title": "tomato-auto-inference"/' kernel-metadata.json
-          sed -i 's/"code_file": ".*"/"code_file": "main.py"/' kernel-metadata.json
-          sed -i 's/"language": ".*"/"language": "python"/' kernel-metadata.json
-          sed -i 's/"kernel_type": ".*"/"kernel_type": "script"/' kernel-metadata.json
-          sed -i 's/"enable_gpu": ".*"/"enable_gpu": "true"/' kernel-metadata.json
-          sed -i 's/"enable_internet": ".*"/"enable_internet": "true"/' kernel-metadata.json
-          sed -i 's/"dataset_access_tokens": \[.*\]/"dataset_access_tokens": ["nesine\/dataset-test", "nesine\/tomato-model-ensemble-learning-v1"]/' kernel-metadata.json
-          
-          # Lancement du code sur Kaggle
           kaggle kernels push
