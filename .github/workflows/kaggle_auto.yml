@@ -21,21 +21,10 @@ jobs:
       - name: Installation de Kaggle API
         run: pip install kaggle
 
-      - name: Authentification Kaggle (Correctif Token)
+      - name: Envoi et Lancement sur Kaggle
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
-        run: |
-          mkdir -p ~/.kaggle
-          # Pour les nouveaux tokens (KGAT), l'API utilise uniquement ce fichier :
-          echo "$KAGGLE_API_TOKEN" > ~/.kaggle/access_token
-          
-          # On crée un kaggle.json vierge qui contient uniquement le username pour éviter le bug de clé manquante
-          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"\"}" > ~/.kaggle/kaggle.json
-          
-          chmod 600 ~/.kaggle/access_token ~/.kaggle/kaggle.json
-
-      - name: Envoi et Lancement sur Kaggle
         run: |
           mkdir -p push_dir
           cp main.py push_dir/
@@ -58,4 +47,5 @@ jobs:
             "kernel_sources": []
           }' > kernel-metadata.json
           
+          # La commande utilise directement les variables d'environnement déclarées au-dessus
           kaggle kernels push
